@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -31,17 +32,48 @@ public class Car {
 		 *      }
 		 */
 
-		return null;
+		// Instantiate the return Map
+		Map<PartType, Integer> missingPartsMap = new java.util.HashMap<PartType, Integer>();
+		missingPartsMap.put(PartType.ENGINE, 1);
+		missingPartsMap.put(PartType.ELECTRICAL, 1);
+		missingPartsMap.put(PartType.TIRE, 4);
+		missingPartsMap.put(PartType.FUEL_FILTER, 1);
+		missingPartsMap.put(PartType.OIL_FILTER, 1);
+
+		if(this.parts.isEmpty())
+		{	// Check edge case
+			return missingPartsMap;
+		}
+		else
+		{
+			Iterator aPart = parts.iterator();
+			while(aPart.hasNext())
+			{	// iterate across the parts list whilst checking against the missing parts map
+				Part thisPart = (Part)aPart.next();
+				PartType thisPartType = thisPart.getType();
+				int x = missingPartsMap.get(thisPartType);
+
+				if(x == 1)
+				{	// remove the part type from the map
+					missingPartsMap.remove(thisPartType, x);
+				}
+				else
+				{	// otherwise decrement it for tire case
+					missingPartsMap.replace(thisPartType, x, --x);
+				}
+			}
+		}
+		return missingPartsMap;
 	}
 
 	@Override
 	public String toString() {
 		return "Car{" +
-				       "year='" + year + '\'' +
-				       ", make='" + make + '\'' +
-				       ", model='" + model + '\'' +
-				       ", parts=" + parts +
-				       '}';
+				"year='" + year + '\'' +
+				", make='" + make + '\'' +
+				", model='" + model + '\'' +
+				", parts=" + parts +
+				'}';
 	}
 
 	/* --------------------------------------------------------------------------------------------------------------- */
