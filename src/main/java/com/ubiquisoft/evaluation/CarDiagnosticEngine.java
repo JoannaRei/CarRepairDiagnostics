@@ -1,5 +1,4 @@
 package com.ubiquisoft.evaluation;
-
 import com.ubiquisoft.evaluation.domain.Car;
 import com.ubiquisoft.evaluation.domain.ConditionType;
 import com.ubiquisoft.evaluation.domain.Part;
@@ -9,6 +8,9 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.List;
+import java.util.Iterator;
 
 public class CarDiagnosticEngine {
 
@@ -39,7 +41,106 @@ public class CarDiagnosticEngine {
 		 * console output is as least as informative as the provided methods.
 		 */
 
+		System.out.println("Beginning Diagnostics...");
+		boolean continueFlag = true;
 
+		// diagnostic step 1
+		System.out.println("Retrieving car info...");
+		String year = car.getYear();
+		String make = car.getMake();
+		String model = car.getModel();
+
+		if(year.equals(""))
+		{
+			System.out.println("There is no year specified");
+			continueFlag = false;
+		}
+		if(make.equals(""))
+		{
+			System.out.println("There is no make specified");
+			continueFlag = false;
+		}
+		if(model.equals(""))
+		{
+			System.out.println("There is no model specified");
+			continueFlag = false;
+		}
+		if(continueFlag)
+		{
+			System.out.println("Car{" +
+					"year='" + year + '\'' +
+					", make='" + make + '\'' +
+					", model='" + model + '\'' +
+					'}');
+
+			//diagnostic step 2
+			System.out.println("Checking for missing parts...");
+
+			Map<PartType, Integer> missingPartsMap = car.getMissingPartsMap();
+			if(missingPartsMap.isEmpty())
+			{
+				System.out.println("There are no missing parts");
+
+				//diagnostic step 3
+				System.out.println("Checking part conditions...");
+
+				List<Part> parts = car.getParts();
+				Iterator aPart = parts.iterator();
+				while(aPart.hasNext())
+				{	// iterate across the parts list whilst checking part condition
+					Part thisPart = (Part)aPart.next();
+					if(!thisPart.isInWorkingCondition())
+					{
+						PartType thisPartType = thisPart.getType();
+						ConditionType thisPartCondition = thisPart.getCondition();
+						this.printDamagedPart(thisPartType, thisPartCondition);
+						continueFlag = false;
+					}
+				}
+				if(continueFlag)
+				{	// diagnostic step 4
+					System.out.println("All parts are in working condition");
+					System.out.println("Diagnostics Complete: Vehicle Passed");
+				}
+				else
+				{	// diagnostic step 3 failed
+					System.out.println("Aborting Diagnostics: Damaged Parts Detected");
+				}
+			}
+			else
+			{	// diagnostic step 2 failed
+				if(missingPartsMap.containsKey(PartType.ENGINE))
+				{
+					int x = missingPartsMap.get(PartType.ENGINE);
+					this.printMissingPart(PartType.ENGINE, x);
+				}
+				if(missingPartsMap.containsKey(PartType.ELECTRICAL))
+				{
+					int x = missingPartsMap.get(PartType.ELECTRICAL);
+					this.printMissingPart(PartType.ELECTRICAL, x);
+				}
+				if(missingPartsMap.containsKey(PartType.TIRE))
+				{
+					int x = missingPartsMap.get(PartType.TIRE);
+					this.printMissingPart(PartType.TIRE, x);
+				}
+				if(missingPartsMap.containsKey(PartType.FUEL_FILTER))
+				{
+					int x = missingPartsMap.get(PartType.FUEL_FILTER);
+					this.printMissingPart(PartType.FUEL_FILTER, x);
+				}
+				if(missingPartsMap.containsKey(PartType.OIL_FILTER))
+				{
+					int x = missingPartsMap.get(PartType.OIL_FILTER);
+					this.printMissingPart(PartType.OIL_FILTER, x);
+				}
+				System.out.println("Aborting Diagnostics: Missing Parts Detected");
+			}
+		}
+		else
+		{	// diagnostic step 1 failed
+			System.out.println("Aborting Diagnostics: Critical Information Missing");
+		}
 	}
 
 	private void printMissingPart(PartType partType, Integer count) {
